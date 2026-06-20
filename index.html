@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VISTA — World Photography Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#080a0f;
+  --surface:#0f1219;
+  --surface2:#161b25;
+  --border:rgba(255,255,255,0.07);
+  --text:#e8eaf0;
+  --text-dim:rgba(232,234,240,0.45);
+  --text-muted:rgba(232,234,240,0.22);
+  --accent:#4f9cf9;
+  --accent2:#a78bfa;
+  --gold:#e2b96f;
+  --green:#5eead4;
+  --rose:#fb7185;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --ease-back:cubic-bezier(0.34,1.56,0.64,1);
+}
+
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* ══════════ SCROLLBAR ══════════ */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(79,156,249,0.3);border-radius:10px}
+
+/* ══════════ NAV ══════════ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;height:64px;
+  background:rgba(8,10,15,0.82);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-brand{
+  font-family:'Playfair Display',serif;
+  font-size:20px;font-weight:700;letter-spacing:0.08em;
+  color:var(--text);
+}
+.nav-brand span{color:var(--accent)}
+.nav-stats{
+  display:flex;align-items:center;gap:24px;
+}
+.nav-stat{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--text-dim);
+  letter-spacing:0.05em;
+}
+.nav-stat strong{color:var(--accent);font-weight:500}
+
+/* ══════════ HERO ══════════ */
+.hero{
+  position:relative;height:100vh;min-height:600px;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;overflow:hidden;
+}
+.hero-reel{
+  position:absolute;inset:0;
+  display:flex;
+}
+.hero-reel-img{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  transition:opacity 1.6s ease;opacity:0;
+}
+.hero-reel-img.active{opacity:1}
+.hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(8,10,15,0.75) 0%,rgba(8,10,15,0.4) 50%,rgba(8,10,15,0.8) 100%);
+}
+.hero-content{position:relative;z-index:2;padding:0 24px;max-width:800px}
+.hero-tag{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:0.35em;text-transform:uppercase;
+  color:var(--accent);
+  border:1px solid rgba(79,156,249,0.3);
+  padding:6px 16px;border-radius:100px;margin-bottom:28px;
+  background:rgba(79,156,249,0.06);
+}
+.hero-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(52px,9vw,110px);
+  font-weight:700;line-height:0.92;
+  color:#fff;
+  letter-spacing:-0.02em;
+}
+.hero-title em{
+  font-style:italic;
+  background:linear-gradient(135deg,var(--gold),var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-desc{
+  margin-top:24px;
+  font-size:15px;font-weight:300;
+  color:rgba(232,234,240,0.6);
+  letter-spacing:0.03em;max-width:440px;margin-left:auto;margin-right:auto;
+}
+.hero-cta{
+  display:inline-flex;align-items:center;gap:10px;
+  margin-top:36px;
+  padding:13px 28px;border-radius:100px;
+  background:rgba(79,156,249,0.12);
+  border:1px solid rgba(79,156,249,0.35);
+  color:var(--accent);
+  font-size:13px;font-weight:500;letter-spacing:0.04em;
+  cursor:pointer;text-decoration:none;
+  transition:all 0.28s var(--ease);
+}
+.hero-cta:hover{background:rgba(79,156,249,0.22);border-color:var(--accent);transform:translateY(-2px)}
+.hero-cta svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+
+.hero-scroll{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  animation:float 2.8s ease-in-out infinite;
+}
+.hero-scroll span{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:var(--text-dim)}
+.scroll-track{width:1px;height:52px;background:linear-gradient(to bottom,var(--accent),transparent)}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+
+/* dots */
+.hero-dots{position:absolute;bottom:88px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:3}
+.hero-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.3s}
+.hero-dot.active{background:var(--accent);width:20px;border-radius:4px}
+
+/* ══════════ FILTER ══════════ */
+.filter-wrap{
+  position:sticky;top:64px;z-index:400;
+  background:rgba(8,10,15,0.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.filter-inner{
+  max-width:1400px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;
+}
+.filter-tabs{display:flex;align-items:center;gap:2px;overflow-x:auto;padding:14px 0;scrollbar-width:none}
+.filter-tabs::-webkit-scrollbar{display:none}
+.ftab{
+  flex-shrink:0;background:none;
+  border:1px solid transparent;
+  color:var(--text-dim);
+  font-family:'Inter',sans-serif;font-size:12px;font-weight:500;
+  letter-spacing:0.04em;padding:7px 18px;border-radius:100px;
+  cursor:pointer;transition:all 0.22s var(--ease);white-space:nowrap;
+}
+.ftab:hover{color:var(--text);border-color:var(--border)}
+.ftab.active{
+  background:var(--accent);border-color:var(--accent);
+  color:#fff;box-shadow:0 0 20px rgba(79,156,249,0.3);
+}
+.ftab[data-f="animals"].active{background:var(--green);border-color:var(--green);box-shadow:0 0 20px rgba(94,234,212,0.3)}
+.ftab[data-f="plants"].active{background:#84cc16;border-color:#84cc16;box-shadow:0 0 20px rgba(132,204,22,0.3);color:#000}
+.ftab[data-f="people"].active{background:var(--accent2);border-color:var(--accent2);box-shadow:0 0 20px rgba(167,139,250,0.3)}
+
+.filter-view{display:flex;gap:6px;flex-shrink:0;padding:14px 0 14px 20px}
+.view-btn{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
+  background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--text-dim);transition:all 0.2s;
+}
+.view-btn.active,.view-btn:hover{background:var(--surface2);border-color:rgba(79,156,249,0.35);color:var(--accent)}
+.view-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+/* ══════════ GALLERY ══════════ */
+.gallery-wrap{max-width:1400px;margin:0 auto;padding:48px 48px 80px}
+
+.gallery-heading{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:36px;flex-wrap:wrap;gap:12px;
+}
+.gallery-heading h2{
+  font-family:'Playfair Display',serif;font-size:28px;font-weight:500;
+  color:var(--text);
+}
+.gallery-heading h2 span{font-style:italic;color:var(--accent)}
+.gallery-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:0.08em}
+
+/* MASONRY */
+.gallery-grid{
+  columns:4 240px;column-gap:16px;
+}
+.gallery-grid.view-2{columns:2 480px}
+.gallery-grid.view-list{columns:1}
+
+/* CARD */
+.gcard{
+  break-inside:avoid;margin-bottom:16px;
+  position:relative;border-radius:12px;overflow:hidden;
+  cursor:pointer;background:var(--surface);
+  border:1px solid var(--border);
+  opacity:0;transform:translateY(20px) scale(0.98);
+  transition:opacity 0.45s var(--ease),transform 0.45s var(--ease),box-shadow 0.35s;
+}
+.gcard.visible{opacity:1;transform:none}
+.gcard:hover{
+  box-shadow:0 24px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(79,156,249,0.2);
+  z-index:2;
+}
+
+.gcard img{
+  width:100%;display:block;
+  transition:transform 0.7s var(--ease),filter 0.4s;
+  filter:brightness(0.88) saturate(0.85);
+}
+.gcard:hover img{transform:scale(1.06);filter:brightness(1) saturate(1.1)}
+
+/* overlay */
+.gcard-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(8,10,15,0.95) 0%,rgba(8,10,15,0.3) 45%,transparent 70%);
+  opacity:0;
+  transition:opacity 0.35s var(--ease);
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:20px;
+}
+.gcard:hover .gcard-overlay,
+.gcard.touch-active .gcard-overlay{opacity:1}
+
+.gcard-cat{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:0.28em;text-transform:uppercase;
+  margin-bottom:5px;
+}
+.cat-places{color:#e2b96f}
+.cat-animals{color:#5eead4}
+.cat-plants{color:#84cc16}
+.cat-people{color:#a78bfa}
+
+.gcard-title{
+  font-family:'Playfair Display',serif;font-size:17px;font-weight:500;
+  color:#fff;line-height:1.25;
+}
+.gcard-loc{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--text-dim);margin-top:5px;
+}
+.gcard-loc svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+
+.gcard-expand{
+  position:absolute;top:12px;right:12px;
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(8,10,15,0.7);
+  border:1px solid rgba(79,156,249,0.3);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:scale(0.7);
+  transition:all 0.3s var(--ease-back);
+}
+.gcard:hover .gcard-expand,
+.gcard.touch-active .gcard-expand{opacity:1;transform:scale(1)}
+.gcard-expand svg{width:14px;height:14px;stroke:var(--accent);fill:none;stroke-width:2}
+
+/* badge top-left */
+.gcard-badge{
+  position:absolute;top:12px;left:12px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  font-weight:500;letter-spacing:0.18em;text-transform:uppercase;
+  padding:4px 9px;border-radius:100px;
+}
+.badge-places{background:rgba(226,185,111,0.15);color:#e2b96f;border:1px solid rgba(226,185,111,0.3)}
+.badge-animals{background:rgba(94,234,212,0.12);color:#5eead4;border:1px solid rgba(94,234,212,0.28)}
+.badge-plants{background:rgba(132,204,22,0.12);color:#84cc16;border:1px solid rgba(132,204,22,0.28)}
+.badge-people{background:rgba(167,139,250,0.12);color:#a78bfa;border:1px solid rgba(167,139,250,0.28)}
+
+/* quick info strip (visible on touch-active) */
+.gcard-quickinfo{
+  position:absolute;bottom:0;left:0;right:0;
+  display:flex;gap:12px;padding:10px 16px;
+  border-top:1px solid rgba(255,255,255,0.06);
+  background:rgba(8,10,15,0.92);
+  transform:translateY(100%);
+  transition:transform 0.32s var(--ease);
+}
+.gcard:hover .gcard-quickinfo,
+.gcard.touch-active .gcard-quickinfo{transform:translateY(0)}
+.qinfo{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim)}
+.qinfo svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+
+/* ══════════ LIGHTBOX ══════════ */
+.lb{
+  position:fixed;inset:0;z-index:900;
+  background:rgba(5,7,10,0.97);
+  backdrop-filter:blur(28px);
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.38s var(--ease);
+}
+.lb.open{opacity:1;pointer-events:all}
+
+/* top bar */
+.lb-topbar{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 32px;z-index:10;
+  background:linear-gradient(to bottom,rgba(5,7,10,0.9),transparent);
+}
+.lb-brand{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:rgba(255,255,255,0.6)}
+.lb-topright{display:flex;align-items:center;gap:12px}
+.lb-counter-top{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:0.1em}
+
+.lb-icon-btn{
+  width:38px;height:38px;border-radius:10px;
+  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text-dim);
+  transition:all 0.22s;
+}
+.lb-icon-btn:hover{background:rgba(255,255,255,0.12);color:var(--text)}
+.lb-icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* main area */
+.lb-main{
+  display:flex;flex:1;overflow:hidden;margin-top:72px;
+}
+
+/* image pane */
+.lb-img-pane{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  position:relative;padding:40px;
+  overflow:hidden;
+}
+.lb-img-wrap{
+  position:relative;max-width:100%;max-height:100%;
+  border-radius:10px;overflow:hidden;
+  box-shadow:0 40px 120px rgba(0,0,0,0.8);
+  transition:transform 0.38s var(--ease);
+}
+.lb-img-wrap img{
+  display:block;max-width:calc(100vw - 480px);max-height:calc(100vh - 200px);
+  object-fit:contain;
+}
+
+/* nav arrows */
+.lb-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(15,18,25,0.85);
+  border:1px solid rgba(255,255,255,0.1);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text);
+  transition:all 0.25s var(--ease);z-index:5;
+}
+.lb-arrow:hover{background:var(--accent);border-color:var(--accent);color:#fff;transform:translateY(-50%) scale(1.08)}
+.lb-arrow svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
+.lb-arr-prev{left:16px}
+.lb-arr-next{right:16px}
+
+/* detail panel */
+.lb-detail{
+  width:340px;flex-shrink:0;
+  background:var(--surface);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  transition:width 0.35s var(--ease);
+}
+.lb-detail.collapsed{width:0;overflow:hidden}
+
+.lb-detail-scroll{padding:32px 28px;min-height:100%}
+
+.detail-cat{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:0.3em;text-transform:uppercase;
+  margin-bottom:10px;
+}
+.detail-title{
+  font-family:'Playfair Display',serif;
+  font-size:26px;font-weight:500;line-height:1.2;
+  color:#fff;margin-bottom:6px;
+}
+.detail-desc{
+  font-size:13px;color:var(--text-dim);line-height:1.65;
+  margin-bottom:28px;
+  padding-bottom:28px;
+  border-bottom:1px solid var(--border);
+}
+
+/* info grid */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:10px;overflow:hidden;margin-bottom:28px}
+.detail-cell{background:var(--surface2);padding:14px 16px}
+.detail-cell-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
+.detail-cell-val{font-size:13px;font-weight:500;color:var(--text)}
+.detail-cell-val.highlight{color:var(--accent)}
+
+/* tags */
+.detail-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:28px}
+.detail-tag{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  padding:4px 10px;border-radius:6px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text-dim);letter-spacing:0.05em;
+}
+
+/* color palette strip */
+.detail-palette-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px}
+.detail-palette{display:flex;gap:6px;margin-bottom:28px}
+.palette-swatch{
+  flex:1;height:28px;border-radius:6px;
+  border:1px solid rgba(255,255,255,0.06);
+  position:relative;cursor:default;
+}
+
+/* download btn */
+.detail-download{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:13px;border-radius:10px;
+  background:linear-gradient(135deg,rgba(79,156,249,0.18),rgba(167,139,250,0.18));
+  border:1px solid rgba(79,156,249,0.3);
+  color:var(--accent);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all 0.25s var(--ease);margin-bottom:12px;
+}
+.detail-download:hover{background:linear-gradient(135deg,rgba(79,156,249,0.28),rgba(167,139,250,0.28));box-shadow:0 8px 24px rgba(79,156,249,0.2)}
+.detail-download svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* strip */
+.lb-strip{
+  height:88px;flex-shrink:0;
+  border-top:1px solid var(--border);
+  background:var(--surface);
+  display:flex;align-items:center;
+  padding:0 20px;gap:10px;overflow-x:auto;
+  scrollbar-width:none;
+}
+.lb-strip::-webkit-scrollbar{display:none}
+
+.lb-thumb{
+  flex-shrink:0;width:68px;height:58px;
+  border-radius:8px;overflow:hidden;
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:all 0.2s var(--ease);
+  opacity:0.45;
+}
+.lb-thumb:hover{opacity:0.75;transform:scale(1.04)}
+.lb-thumb.active{border-color:var(--accent);opacity:1;transform:scale(1.06)}
+.lb-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ══════════ FOOTER ══════════ */
+footer{
+  border-top:1px solid var(--border);
+  padding:36px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+  max-width:100%;
+}
+.footer-brand{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--text)}
+.footer-brand span{color:var(--accent)}
+footer p{font-size:12px;color:var(--text-muted);letter-spacing:0.04em}
+
+/* ══════════ RESPONSIVE ══════════ */
+@media(max-width:1024px){
+  .lb-detail{width:300px}
+  .lb-img-wrap img{max-width:calc(100vw - 340px)}
+}
+@media(max-width:768px){
+  .nav{padding:0 20px}
+  .nav-stats{display:none}
+  .filter-inner{padding:0 16px}
+  .gallery-wrap{padding:32px 16px 60px}
+  .lb-detail{
+    position:absolute;bottom:88px;left:0;right:0;top:auto;
+    width:100%!important;max-height:55vh;
+    border-left:none;border-top:1px solid var(--border);
+    transition:transform 0.35s var(--ease);
+    transform:translateY(100%);
+    z-index:8;
+  }
+  .lb-detail.open{transform:translateY(0);overflow:visible}
+  .lb-detail.collapsed{width:100%!important;transform:translateY(100%)}
+  .lb-img-wrap img{max-width:100vw;max-height:55vh}
+  .lb-main{margin-top:64px;flex-direction:column}
+  .lb-img-pane{padding:20px;min-height:45vh}
+  .lb-arr-prev{left:8px}
+  .lb-arr-next{right:8px}
+  .lb-strip{height:72px;padding:0 12px;gap:8px}
+  .lb-thumb{width:56px;height:46px}
+  footer{padding:28px 20px}
+}
+
+/* animations */
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.gcard.loading{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">VIST<span>A</span></div>
+  <div class="nav-stats">
+    <div class="nav-stat">Collection <strong id="totalCount">36</strong></div>
+    <div class="nav-stat">4K Resolution</div>
+    <div class="nav-stat">4 Categories</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-reel" id="heroReel"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-tag">World Photography Collection 2024</div>
+    <h1 class="hero-title">Every Frame<br/>Tells a <em>Story</em></h1>
+    <p class="hero-desc">36 handpicked 4K photographs across places, wildlife, flora &amp; humanity — curated for the curious eye.</p>
+    <a href="#gallery" class="hero-cta">
+      Explore Gallery
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </a>
+  </div>
+  <div class="hero-dots" id="heroDots"></div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-track"></div>
+  </div>
+</section>
+
+<!-- FILTERS -->
+<div class="filter-wrap">
+  <div class="filter-inner">
+    <div class="filter-tabs">
+      <button class="ftab active" data-f="all">✦ All</button>
+      <button class="ftab" data-f="places">🌍 Places</button>
+      <button class="ftab" data-f="animals">🦁 Animals</button>
+      <button class="ftab" data-f="plants">🌿 Plants</button>
+      <button class="ftab" data-f="people">👤 People</button>
+    </div>
+    <div class="filter-view">
+      <button class="view-btn active" id="vMasonry" title="Masonry">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      </button>
+      <button class="view-btn" id="v2col" title="2 columns">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div class="gallery-wrap" id="gallery">
+  <div class="gallery-heading">
+    <h2 id="galleryTitle">All <span>Photographs</span></h2>
+    <div class="gallery-meta" id="galleryMeta">36 images · Touch or hover to preview</div>
+  </div>
+  <div class="gallery-grid" id="grid"></div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <div class="lb-topbar">
+    <div class="lb-brand">VISTA</div>
+    <div class="lb-topright">
+      <span class="lb-counter-top" id="lbCounterTop"></span>
+      <button class="lb-icon-btn" id="lbToggleInfo" title="Toggle info panel" aria-label="Toggle info">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </button>
+      <button class="lb-icon-btn" id="lbClose" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="lb-main">
+    <!-- Image -->
+    <div class="lb-img-pane">
+      <div class="lb-img-wrap" id="lbImgWrap">
+        <img id="lbImg" src="" alt=""/>
+      </div>
+      <button class="lb-arrow lb-arr-prev" id="lbPrev" aria-label="Previous">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="lb-arrow lb-arr-next" id="lbNext" aria-label="Next">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="lb-detail" id="lbDetail">
+      <div class="lb-detail-scroll">
+        <div class="detail-cat" id="dCat"></div>
+        <div class="detail-title" id="dTitle"></div>
+        <div class="detail-desc" id="dDesc"></div>
+
+        <div class="detail-grid" id="dGrid">
+          <div class="detail-cell"><div class="detail-cell-label">📅 Date Taken</div><div class="detail-cell-val" id="dDate"></div></div>
+          <div class="detail-cell"><div class="detail-cell-label">📐 Dimensions</div><div class="detail-cell-val highlight" id="dDim"></div></div>
+          <div class="detail-cell"><div class="detail-cell-label">📦 File Size</div><div class="detail-cell-val" id="dSize"></div></div>
+          <div class="detail-cell"><div class="detail-cell-label">📷 Camera</div><div class="detail-cell-val" id="dCamera"></div></div>
+          <div class="detail-cell"><div class="detail-cell-label">🌍 Location</div><div class="detail-cell-val" id="dLoc"></div></div>
+          <div class="detail-cell"><div class="detail-cell-label">👤 Photographer</div><div class="detail-cell-val" id="dPhotog"></div></div>
+          <div class="detail-cell"><div class="detail-cell-label">⏱ Exposure</div><div class="detail-cell-val" id="dExp"></div></div>
+          <div class="detail-cell"><div class="detail-cell-label">🎨 Aperture</div><div class="detail-cell-val" id="dApt"></div></div>
+        </div>
+
+        <div class="detail-palette-label">Dominant Colors</div>
+        <div class="detail-palette" id="dPalette"></div>
+
+        <div id="dTags" class="detail-tags"></div>
+
+        <button class="detail-download" id="lbDownload">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          View Full Resolution
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thumbnail Strip -->
+  <div class="lb-strip" id="lbStrip"></div>
+</div>
+
+<footer>
+  <div class="footer-brand">VIST<span>A</span></div>
+  <p>CodeAlpha Internship · Frontend Task 1 · Image Gallery · 2024</p>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+const PHOTOS = [
+  // ── PLACES ──
+  {
+    src:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=70',
+    title:'Swiss Alps at Golden Hour',
+    location:'Bernese Alps, Switzerland',
+    category:'places',
+    desc:'Towering peaks pierce the clouds as the setting sun bathes the Swiss Alps in amber fire. A world of silence above the tree line.',
+    date:'June 14, 2023',
+    dims:'7680 × 4320 px',
+    size:'18.4 MB',
+    camera:'Sony A7R V',
+    photographer:'Luca Bravo',
+    exposure:'1/500s · ISO 64',
+    aperture:'f/8.0',
+    palette:['#7aa5c8','#c9a96e','#e8d5a3','#4a6a8a','#f2e8d0'],
+    tags:['mountains','golden-hour','landscape','alps','switzerland']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=400&q=70',
+    title:'Santorini at Dusk',
+    location:'Oia, Santorini, Greece',
+    category:'places',
+    desc:'White-washed cubic buildings cascade down volcanic cliffs as the Aegean sky turns to shades of coral and violet.',
+    date:'August 3, 2022',
+    dims:'6720 × 4480 px',
+    size:'14.2 MB',
+    camera:'Canon EOS R5',
+    photographer:'Alex Antoniadis',
+    exposure:'1/320s · ISO 100',
+    aperture:'f/5.6',
+    palette:['#5b8db8','#e8c4a0','#ffffff','#d4845a','#8bb5d4'],
+    tags:['greece','sunset','architecture','island','mediterranean']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=400&q=70',
+    title:'Dolomites Morning Mist',
+    location:'Tre Cime, South Tyrol, Italy',
+    category:'places',
+    desc:'Three ancient rock spires emerge from rolling fog as dawn light turns their limestone faces to pure gold.',
+    date:'September 5, 2023',
+    dims:'8192 × 5464 px',
+    size:'22.1 MB',
+    camera:'Nikon Z9',
+    photographer:'Marco Bertolini',
+    exposure:'1/250s · ISO 200',
+    aperture:'f/11.0',
+    palette:['#b8c8d8','#c8a87a','#e8e0d4','#708090','#d4c0a0'],
+    tags:['dolomites','italy','mountains','mist','dawn']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&q=70',
+    title:'Maldives Infinity',
+    location:'North Malé Atoll, Maldives',
+    category:'places',
+    desc:'Crystal-clear lagoon waters extend to the horizon in every shade of turquoise, surrounding a solitary overwater villa.',
+    date:'December 20, 2022',
+    dims:'7360 × 4912 px',
+    size:'16.8 MB',
+    camera:'Fujifilm GFX 100S',
+    photographer:'Sam Clarke',
+    exposure:'1/1000s · ISO 64',
+    aperture:'f/7.1',
+    palette:['#38b2c8','#7dd8e8','#c8e8f0','#1a8fa8','#e8f8fc'],
+    tags:['maldives','ocean','tropical','paradise','overwater']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=400&q=70',
+    title:'Arashiyama Bamboo Path',
+    location:'Kyoto, Japan',
+    category:'places',
+    desc:'Thousands of bamboo stalks form cathedral-like corridors where the wind hums its own ancient melody at dawn.',
+    date:'April 9, 2023',
+    dims:'6000 × 4000 px',
+    size:'12.9 MB',
+    camera:'Sony A7 IV',
+    photographer:'Yuki Tanaka',
+    exposure:'1/60s · ISO 800',
+    aperture:'f/4.0',
+    palette:['#5a8c5a','#a0c870','#c8e0b0','#3a5c3a','#e0f0d0'],
+    tags:['japan','bamboo','kyoto','forest','green']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=400&q=70',
+    title:'Valensole Lavender Fields',
+    location:'Provence, France',
+    category:'places',
+    desc:'A million purple blooms stretch to the horizon beneath a pale summer sky, perfuming the air for miles around.',
+    date:'July 2, 2023',
+    dims:'7000 × 4668 px',
+    size:'15.3 MB',
+    camera:'Leica SL2',
+    photographer:'Amélie Fontaine',
+    exposure:'1/400s · ISO 100',
+    aperture:'f/9.0',
+    palette:['#9b7ec8','#c4a8e8','#e8d4f8','#6a4a9a','#f0e8fc'],
+    tags:['france','lavender','fields','purple','summer']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&q=70',
+    title:'Grand Canyon Twilight',
+    location:'South Rim, Arizona, USA',
+    category:'places',
+    desc:'Ancient geological layers glow in shades of rust, ochre and violet as the last light vanishes into the canyon\'s depths.',
+    date:'October 18, 2022',
+    dims:'8688 × 5792 px',
+    size:'24.6 MB',
+    camera:'Phase One XT',
+    photographer:'James Wheeler',
+    exposure:'1/30s · ISO 400',
+    aperture:'f/16',
+    palette:['#c87840','#e0a060','#a05830','#d4c080','#803818'],
+    tags:['usa','canyon','geology','sunset','arizona']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1535530992830-e25d07cfa780?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1535530992830-e25d07cfa780?w=400&q=70',
+    title:'Sahara Dune Sea',
+    location:'Erg Chebbi, Morocco',
+    category:'places',
+    desc:'Sculpted by millennia of wind, these golden dunes rise like frozen waves in a sea of sand stretching beyond sight.',
+    date:'March 14, 2023',
+    dims:'7200 × 4800 px',
+    size:'17.0 MB',
+    camera:'Canon EOS R3',
+    photographer:'Karim El Fassi',
+    exposure:'1/640s · ISO 100',
+    aperture:'f/10.0',
+    palette:['#c8a050','#e8c878','#f0d8a0','#a07830','#fce8b8'],
+    tags:['morocco','sahara','desert','dunes','sand']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70',
+    title:'Norwegian Fjord',
+    location:'Geirangerfjord, Norway',
+    category:'places',
+    desc:'Sheer cliffs plunge into still waters that mirror the sky perfectly — nature\'s most dramatic looking glass.',
+    date:'June 28, 2022',
+    dims:'6720 × 4480 px',
+    size:'13.7 MB',
+    camera:'Nikon Z8',
+    photographer:'Erik Solheim',
+    exposure:'1/160s · ISO 200',
+    aperture:'f/8.0',
+    palette:['#4a7890','#a8c8d8','#c8dce8','#2a5870','#e8f0f8'],
+    tags:['norway','fjord','cliffs','water','scandinavia']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=400&q=70',
+    title:'Amsterdam Tulip Spring',
+    location:'Keukenhof, Netherlands',
+    category:'places',
+    desc:'Seven million tulips burst into bloom across 79 acres of manicured parkland — the world\'s most extravagant floral spectacle.',
+    date:'April 22, 2023',
+    dims:'6500 × 4340 px',
+    size:'14.8 MB',
+    camera:'Sony A1',
+    photographer:'Fem van der Hoeven',
+    exposure:'1/500s · ISO 100',
+    aperture:'f/6.3',
+    palette:['#e84870','#f87898','#fce8f0','#c82850','#ffd0d8'],
+    tags:['netherlands','tulips','spring','flowers','amsterdam']
+  },
+
+  // ── ANIMALS ──
+  {
+    src:'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=400&q=70',
+    title:'The Lion King',
+    location:'Masai Mara, Kenya',
+    category:'animals',
+    desc:'A male lion surveys his kingdom from a termite mound as the savanna wind ruffles his magnificent mane.',
+    date:'February 7, 2023',
+    dims:'7360 × 4912 px',
+    size:'19.2 MB',
+    camera:'Canon EOS R5',
+    photographer:'Art Wolfe',
+    exposure:'1/2000s · ISO 640',
+    aperture:'f/5.6',
+    palette:['#c8a050','#8a6028','#e0c880','#604018','#f0d898'],
+    tags:['lion','africa','kenya','wildlife','predator']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=400&q=70',
+    title:'Arctic Fox in Snowfall',
+    location:'Svalbard, Norway',
+    category:'animals',
+    desc:'A pure white arctic fox pauses in a blizzard, eyes sharp with intelligence, perfectly camouflaged against the tundra.',
+    date:'January 11, 2023',
+    dims:'6000 × 4000 px',
+    size:'10.8 MB',
+    camera:'Nikon Z9',
+    photographer:'Ole Jørgen Liodden',
+    exposure:'1/1600s · ISO 1600',
+    aperture:'f/4.0',
+    palette:['#e8eef4','#c0ccd8','#a0b0c0','#f8fafc','#808898'],
+    tags:['arctic','fox','snow','norway','camouflage']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1557564221-c5b7d066fa27?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1557564221-c5b7d066fa27?w=400&q=70',
+    title:'Humpback Whale Breach',
+    location:'Tonga, South Pacific',
+    category:'animals',
+    desc:'A 40-ton humpback whale leaps free of the Pacific, crashing back in an explosion of spray and raw ocean power.',
+    date:'August 19, 2022',
+    dims:'8256 × 5504 px',
+    size:'23.7 MB',
+    camera:'Sony A9 III',
+    photographer:'Brian Skerry',
+    exposure:'1/3200s · ISO 800',
+    aperture:'f/6.3',
+    palette:['#2870a8','#5898c8','#a8d0e8','#184878','#d0e8f8'],
+    tags:['whale','ocean','breach','pacific','marine']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=400&q=70',
+    title:'Sea Turtle Glide',
+    location:'Ningaloo Reef, Australia',
+    category:'animals',
+    desc:'An ancient green sea turtle glides effortlessly through crystal water over coral, unhurried and utterly serene.',
+    date:'November 3, 2022',
+    dims:'6720 × 4480 px',
+    size:'15.5 MB',
+    camera:'Olympus OM-D E-M1 III',
+    photographer:'David Doubilet',
+    exposure:'1/250s · ISO 400',
+    aperture:'f/8.0',
+    palette:['#38a888','#68c8a8','#a8e0d0','#1a7858','#d0f0e8'],
+    tags:['turtle','ocean','australia','reef','underwater']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1534567153574-2b12153a87f0?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1534567153574-2b12153a87f0?w=400&q=70',
+    title:'Snowy Owl Gaze',
+    location:'Boreal Forest, Canada',
+    category:'animals',
+    desc:'Golden eyes of a snowy owl hold centuries of frozen wilderness within them, alert and knowing in equal measure.',
+    date:'December 4, 2022',
+    dims:'6000 × 4000 px',
+    size:'13.2 MB',
+    camera:'Canon EOS 1DX Mark III',
+    photographer:'Sergey Gorshkov',
+    exposure:'1/800s · ISO 1250',
+    aperture:'f/5.0',
+    palette:['#f0f0e8','#d0d0c0','#c8b870','#a0a090','#e8e0c0'],
+    tags:['owl','canada','arctic','bird','predator']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?w=400&q=70',
+    title:'Cheetah at Full Speed',
+    location:'Amboseli, Kenya',
+    category:'animals',
+    desc:'The world\'s fastest land animal is a blur of spotted gold, clocking 112 km/h across the open savanna.',
+    date:'March 22, 2023',
+    dims:'7360 × 4912 px',
+    size:'18.9 MB',
+    camera:'Nikon Z9 + 600mm',
+    photographer:'Frans Lanting',
+    exposure:'1/4000s · ISO 1600',
+    aperture:'f/4.5',
+    palette:['#c8a050','#e8c878','#a07828','#f0d898','#805820'],
+    tags:['cheetah','speed','africa','predator','sprint']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1568740293843-027b60ea06a3?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1568740293843-027b60ea06a3?w=400&q=70',
+    title:'Flamingo Lake',
+    location:'Lake Nakuru, Kenya',
+    category:'animals',
+    desc:'Half a million lesser flamingos turn a soda lake into a living pink carpet — one of Earth\'s most stunning wildlife spectacles.',
+    date:'July 30, 2022',
+    dims:'8192 × 5464 px',
+    size:'21.4 MB',
+    camera:'Sony A7R V',
+    photographer:'Nick Brandt',
+    exposure:'1/1250s · ISO 200',
+    aperture:'f/9.0',
+    palette:['#f08898','#e86878','#f8c0c8','#d04858','#fce8ec'],
+    tags:['flamingo','lake','kenya','pink','flock']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1504173010664-32509107de52?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1504173010664-32509107de52?w=400&q=70',
+    title:'Mountain Gorilla Portrait',
+    location:'Bwindi Forest, Uganda',
+    category:'animals',
+    desc:'The eyes of a mountain gorilla carry an unmistakable depth — reflective, calm, and hauntingly close to human.',
+    date:'May 16, 2023',
+    dims:'6000 × 4000 px',
+    size:'12.4 MB',
+    camera:'Canon EOS R5',
+    photographer:'Brent Stirton',
+    exposure:'1/125s · ISO 1600',
+    aperture:'f/2.8',
+    palette:['#383028','#605040','#908070','#282018','#c0b0a0'],
+    tags:['gorilla','uganda','primate','rainforest','wildlife']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1544985361-b420d7a77043?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1544985361-b420d7a77043?w=400&q=70',
+    title:'Arctic Wolf Pack',
+    location:'Ellesmere Island, Canada',
+    category:'animals',
+    desc:'Three Arctic wolves move across frozen tundra as a unit — silent, deliberate and perfectly adapted to the polar world.',
+    date:'January 28, 2023',
+    dims:'7680 × 5120 px',
+    size:'20.6 MB',
+    camera:'Nikon D6',
+    photographer:'Jim Brandenburg',
+    exposure:'1/500s · ISO 800',
+    aperture:'f/6.3',
+    palette:['#d8dce8','#b0b8c8','#e8ecf4','#888ea8','#f4f6fc'],
+    tags:['wolf','arctic','canada','pack','snow']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1456926631375-92c8ce872def?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1456926631375-92c8ce872def?w=400&q=70',
+    title:'Monarch Migration',
+    location:'Sierra Chincua, Mexico',
+    category:'animals',
+    desc:'Tens of millions of monarch butterflies transform oyamel fir trees into living tapestries of orange and black.',
+    date:'November 12, 2022',
+    dims:'6500 × 4340 px',
+    size:'14.1 MB',
+    camera:'Canon EOS R6 II',
+    photographer:'Joel Sartore',
+    exposure:'1/320s · ISO 640',
+    aperture:'f/5.6',
+    palette:['#e87820','#f0a848','#f8d098','#c05808','#fce8c0'],
+    tags:['butterfly','mexico','migration','monarch','orange']
+  },
+
+  // ── PLANTS ──
+  {
+    src:'https://images.unsplash.com/photo-1502810365585-56ffa361fdde?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1502810365585-56ffa361fdde?w=400&q=70',
+    title:'Cherry Blossom Storm',
+    location:'Shinjuku Gyoen, Tokyo, Japan',
+    category:'plants',
+    desc:'Sakura petals shower down like pink snow in Shinjuku\'s ancient gardens during peak hanami season.',
+    date:'March 30, 2023',
+    dims:'7000 × 4668 px',
+    size:'16.3 MB',
+    camera:'Sony A7R V',
+    photographer:'Yui Yoshida',
+    exposure:'1/320s · ISO 200',
+    aperture:'f/5.6',
+    palette:['#f8c8d8','#f0a8b8','#fce8f0','#d88098','#fff0f4'],
+    tags:['cherry-blossom','japan','spring','sakura','pink']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1463320726281-696a3cc57e2b?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1463320726281-696a3cc57e2b?w=400&q=70',
+    title:'Amazon Canopy',
+    location:'Amazonas State, Brazil',
+    category:'plants',
+    desc:'From above, the Amazon rainforest is an unbroken sea of green — the lungs of the Earth seen from its own sky.',
+    date:'September 14, 2022',
+    dims:'8192 × 5464 px',
+    size:'23.0 MB',
+    camera:'Hasselblad X2D',
+    photographer:'Sebastião Salgado',
+    exposure:'1/800s · ISO 100',
+    aperture:'f/8.0',
+    palette:['#3a7030','#60a050','#90c878','#206018','#b8e0a0'],
+    tags:['amazon','brazil','rainforest','canopy','green']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1444930694458-01babf71870c?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1444930694458-01babf71870c?w=400&q=70',
+    title:'Giant Sequoia Cathedral',
+    location:'Sequoia National Park, California',
+    category:'plants',
+    desc:'A 3,000-year-old giant sequoia dwarfs everything around it — the largest living thing on Earth by volume.',
+    date:'October 8, 2022',
+    dims:'6720 × 4480 px',
+    size:'15.8 MB',
+    camera:'Canon EOS R5',
+    photographer:'Michael Nichols',
+    exposure:'1/40s · ISO 1600',
+    aperture:'f/4.0',
+    palette:['#8a6040','#a08060','#c0a080','#605030','#e0c0a0'],
+    tags:['sequoia','california','forest','ancient','giant']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=400&q=70',
+    title:'Lotus at Sunrise',
+    location:'Bali, Indonesia',
+    category:'plants',
+    desc:'A solitary lotus rises from still black water into the first light of dawn — ancient symbol of purity reborn.',
+    date:'June 3, 2023',
+    dims:'6000 × 4000 px',
+    size:'11.7 MB',
+    camera:'Fujifilm X-T5',
+    photographer:'Putu Wijaya',
+    exposure:'1/200s · ISO 200',
+    aperture:'f/4.5',
+    palette:['#f8b8c8','#f090a8','#fce0e8','#d06080','#fff0f4'],
+    tags:['lotus','bali','indonesia','flower','sunrise']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1470058869958-2a77ade41c02?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1470058869958-2a77ade41c02?w=400&q=70',
+    title:'Tuscany Sunflower Fields',
+    location:'Val d\'Orcia, Tuscany, Italy',
+    category:'plants',
+    desc:'A million sunflower faces turn to track the Italian sun across a sky of impossible blue — a sight of pure summer joy.',
+    date:'July 18, 2022',
+    dims:'7680 × 5120 px',
+    size:'19.7 MB',
+    camera:'Leica M11',
+    photographer:'Giulia Rossi',
+    exposure:'1/640s · ISO 100',
+    aperture:'f/8.0',
+    palette:['#e8b820','#f0d050','#f8e898','#c08808','#fcf0c0'],
+    tags:['sunflowers','tuscany','italy','yellow','summer']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=400&q=70',
+    title:'California Poppy Superbloom',
+    location:'Antelope Valley, California',
+    category:'plants',
+    desc:'An unusually wet winter triggers the legendary superbloom — carpeting desert hillsides in vibrant orange as far as the eye can see.',
+    date:'March 10, 2023',
+    dims:'7200 × 4800 px',
+    size:'17.5 MB',
+    camera:'Sony A7R IV',
+    photographer:'Craig Strong',
+    exposure:'1/400s · ISO 100',
+    aperture:'f/9.0',
+    palette:['#e87020','#f09848','#f8c898','#c04808','#fce0b8'],
+    tags:['poppy','california','superbloom','orange','wildflower']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=400&q=70',
+    title:'Monstera Jungle',
+    location:'Monteverde Cloud Forest, Costa Rica',
+    category:'plants',
+    desc:'Giant split-leaf philodendron leaves catch shafts of green light filtering through the Costa Rican cloud forest canopy.',
+    date:'August 22, 2022',
+    dims:'6000 × 4000 px',
+    size:'12.1 MB',
+    camera:'Olympus OM System OM-1',
+    photographer:'Tim Laman',
+    exposure:'1/80s · ISO 1000',
+    aperture:'f/3.5',
+    palette:['#2a6830','#48904a','#80c080','#186028','#b0d8b0'],
+    tags:['monstera','costa-rica','tropical','jungle','green']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1520412099551-62b6bafeb5bb?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1520412099551-62b6bafeb5bb?w=400&q=70',
+    title:'Water Lily Garden',
+    location:'Monet\'s Garden, Giverny, France',
+    category:'plants',
+    desc:'The very pond that inspired Monet\'s masterpiece series still holds its quiet magic — lily pads afloat on reflected sky.',
+    date:'June 18, 2022',
+    dims:'6720 × 4480 px',
+    size:'14.6 MB',
+    camera:'Canon EOS R6',
+    photographer:'Olivier Renaud',
+    exposure:'1/160s · ISO 200',
+    aperture:'f/6.3',
+    palette:['#508868','#78b090','#a8d0b8','#306848','#d0e8dc'],
+    tags:['waterlily','france','monet','garden','impressionism']
+  },
+
+  // ── PEOPLE ──
+  {
+    src:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=70',
+    title:'Rajasthan Village Elder',
+    location:'Pushkar, Rajasthan, India',
+    category:'people',
+    desc:'Deep-set eyes carry the weight of decades of desert sun and the warmth of an entire village\'s memory.',
+    date:'February 3, 2023',
+    dims:'6000 × 4000 px',
+    size:'11.3 MB',
+    camera:'Leica Q3',
+    photographer:'Steve McCurry',
+    exposure:'1/250s · ISO 400',
+    aperture:'f/2.8',
+    palette:['#c87830','#a05820','#e8b070','#803010','#f0d0a0'],
+    tags:['india','portrait','elder','rajasthan','culture']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=400&q=70',
+    title:'Tibetan Monk at Potala',
+    location:'Lhasa, Tibet',
+    category:'people',
+    desc:'A monk in saffron robes pauses on the steps of Potala Palace, where the thin air carries the scent of butter lamps.',
+    date:'April 5, 2022',
+    dims:'6720 × 4480 px',
+    size:'13.9 MB',
+    camera:'Nikon Z7 II',
+    photographer:'Michael Yamashita',
+    exposure:'1/500s · ISO 200',
+    aperture:'f/5.6',
+    palette:['#c86020','#e89050','#f0c090','#a04010','#f8e0c0'],
+    tags:['tibet','monk','lhasa','culture','religion']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&q=70',
+    title:'Street Musician, French Quarter',
+    location:'New Orleans, Louisiana, USA',
+    category:'people',
+    desc:'A jazz trumpeter closes his eyes on Bourbon Street, lost in improvisation as the humid Louisiana evening gathers.',
+    date:'September 8, 2022',
+    dims:'6000 × 4000 px',
+    size:'10.9 MB',
+    camera:'Fujifilm X-Pro3',
+    photographer:'Platon Antoniou',
+    exposure:'1/60s · ISO 3200',
+    aperture:'f/2.0',
+    palette:['#302820','#604030','#908070','#180808','#c0a890'],
+    tags:['jazz','new-orleans','music','street','usa']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&q=70',
+    title:'Golden Hour Portrait',
+    location:'Cape Town, South Africa',
+    category:'people',
+    desc:'Light from the setting sun sculpts a young face in Cape Town gold — a moment of absolute stillness before nightfall.',
+    date:'May 24, 2023',
+    dims:'7360 × 4912 px',
+    size:'16.7 MB',
+    camera:'Sony A7C II',
+    photographer:'Zanele Muholi',
+    exposure:'1/400s · ISO 100',
+    aperture:'f/2.5',
+    palette:['#e8a050','#c07828','#f0c890','#a05808','#fce0b0'],
+    tags:['portrait','south-africa','golden-hour','youth','light']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=70',
+    title:'Desert Tuareg Woman',
+    location:'Agadez, Niger',
+    category:'people',
+    desc:'Adorned in deep indigo robes against the blinding Saharan light, a Tuareg woman moves with centuries of desert knowledge.',
+    date:'January 20, 2023',
+    dims:'6000 × 4000 px',
+    size:'11.6 MB',
+    camera:'Canon EOS R5',
+    photographer:'Pascal Maitre',
+    exposure:'1/640s · ISO 100',
+    aperture:'f/8.0',
+    palette:['#304880','#5070a8','#8090c0','#182860','#b0c0e0'],
+    tags:['tuareg','niger','desert','indigo','culture']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&q=70',
+    title:'Havana Dancer',
+    location:'Old Havana, Cuba',
+    category:'people',
+    desc:'A salsa dancer freezes at the peak of a spin in a sunlit Havana doorway — colour, joy and motion in a single frame.',
+    date:'March 18, 2023',
+    dims:'6720 × 4480 px',
+    size:'14.4 MB',
+    camera:'Leica SL2-S',
+    photographer:'Yann Arthus-Bertrand',
+    exposure:'1/800s · ISO 400',
+    aperture:'f/3.5',
+    palette:['#d84830','#e87850','#f0b090','#a02810','#f8d0b0'],
+    tags:['cuba','salsa','havana','dance','colour']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400&q=70',
+    title:'Inle Lake Fisherman',
+    location:'Inle Lake, Shan State, Myanmar',
+    category:'people',
+    desc:'A Intha fisherman balances on one leg at the bow of his canoe, casting a conical net at dawn — a ritual unchanged for centuries.',
+    date:'December 10, 2022',
+    dims:'7200 × 4800 px',
+    size:'17.1 MB',
+    camera:'Nikon D850',
+    photographer:'David Alan Harvey',
+    exposure:'1/500s · ISO 400',
+    aperture:'f/5.6',
+    palette:['#688898','#90b0c0','#b8d0d8','#406878','#d8e8f0'],
+    tags:['myanmar','fisherman','lake','traditional','dawn']
+  },
+  {
+    src:'https://images.unsplash.com/photo-1545912452-8aea7e25a3d3?w=1800&q=90',
+    thumb:'https://images.unsplash.com/photo-1545912452-8aea7e25a3d3?w=400&q=70',
+    title:'Abuela\'s Hands, Oaxaca',
+    location:'Oaxaca City, Mexico',
+    category:'people',
+    desc:'Hands worn by seven decades of weaving, cooking, and raising children tell the whole story of a life well and fully lived.',
+    date:'November 6, 2022',
+    dims:'6000 × 4000 px',
+    size:'10.5 MB',
+    camera:'Leica Q2',
+    photographer:'Ana Casas Broda',
+    exposure:'1/125s · ISO 800',
+    aperture:'f/3.5',
+    palette:['#a07850','#c8a070','#e0c098','#784828','#f0d8b8'],
+    tags:['mexico','hands','oaxaca','grandmother','texture']
+  },
+];
+
+const CAT_COLORS = {
+  places:'cat-places', animals:'cat-animals', plants:'cat-plants', people:'cat-people'
+};
+const CAT_LABELS = { all:'All', places:'Places', animals:'Animals', plants:'Plants', people:'People' };
+
+// ═══════════════════════════════════════════════
+// HERO REEL
+// ═══════════════════════════════════════════════
+const heroImages = [
+  PHOTOS[0].src, PHOTOS[10].src, PHOTOS[20].src, PHOTOS[30].src, PHOTOS[6].src
+];
+let heroIdx = 0;
+
+function initHero() {
+  const reel = document.getElementById('heroReel');
+  const dotsEl = document.getElementById('heroDots');
+  heroImages.forEach((src, i) => {
+    const d = document.createElement('div');
+    d.className = 'hero-reel-img' + (i===0?' active':'');
+    d.style.backgroundImage = `url('${src}')`;
+    reel.appendChild(d);
+    const dot = document.createElement('div');
+    dot.className = 'hero-dot' + (i===0?' active':'');
+    dot.addEventListener('click', ()=>goHero(i));
+    dotsEl.appendChild(dot);
+  });
+}
+
+function goHero(idx) {
+  document.querySelectorAll('.hero-reel-img').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  document.querySelectorAll('.hero-dot').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  heroIdx = idx;
+}
+
+setInterval(()=>goHero((heroIdx+1)%heroImages.length), 5000);
+initHero();
+
+// ═══════════════════════════════════════════════
+// GALLERY
+// ═══════════════════════════════════════════════
+let currentFilter = 'all';
+let visiblePhotos = [];
+
+function buildGrid(filter) {
+  currentFilter = filter;
+  visiblePhotos = filter==='all' ? [...PHOTOS] : PHOTOS.filter(p=>p.category===filter);
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  visiblePhotos.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'gcard';
+    card.dataset.index = i;
+    card.style.animationDelay = `${(i%16)*0.04}s`;
+
+    card.innerHTML = `
+      <img src="${p.src.replace('w=1800','w=800')}" alt="${p.title}" loading="lazy"/>
+      <div class="gcard-badge badge-${p.category}">${p.category}</div>
+      <div class="gcard-overlay">
+        <div class="gcard-cat ${CAT_COLORS[p.category]}">${p.category}</div>
+        <div class="gcard-title">${p.title}</div>
+        <div class="gcard-loc">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${p.location}
+        </div>
+      </div>
+      <div class="gcard-expand">
+        <svg viewBox="0 0 24 24"><path d="M15 3h6m0 0v6m0-6l-7 7M9 21H3m0 0v-6m0 6l7-7"/></svg>
+      </div>
+      <div class="gcard-quickinfo">
+        <div class="qinfo"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>${p.dims}</div>
+        <div class="qinfo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${p.date}</div>
+        <div class="qinfo"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>${p.camera}</div>
+      </div>
+    `;
+
+    // Click / touch
+    card.addEventListener('click', ()=>openLB(i));
+
+    // Touch: first tap shows overlay, second opens LB
+    let tapped = false;
+    card.addEventListener('touchstart', e=>{
+      if(!tapped) {
+        e.preventDefault();
+        document.querySelectorAll('.gcard.touch-active').forEach(c=>c.classList.remove('touch-active'));
+        card.classList.add('touch-active');
+        tapped = true;
+        setTimeout(()=>{tapped=false;card.classList.remove('touch-active')},2800);
+      } else {
+        e.preventDefault();
+        openLB(i);
+      }
+    },{passive:false});
+
+    grid.appendChild(card);
+  });
+
+  // Intersection observer for stagger
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(en=>{ if(en.isIntersecting) en.target.classList.add('visible') });
+  },{threshold:0.08});
+  document.querySelectorAll('.gcard').forEach(c=>io.observe(c));
+
+  // Update heading
+  const label = filter==='all'?'All':'';
+  document.getElementById('galleryTitle').innerHTML = label
+    ? `All <span>Photographs</span>`
+    : `<span>${CAT_LABELS[filter]}</span> Collection`;
+  document.getElementById('galleryMeta').textContent = `${visiblePhotos.length} image${visiblePhotos.length!==1?'s':''} · Touch or hover to preview`;
+  document.getElementById('totalCount').textContent = visiblePhotos.length;
+}
+
+// Filter buttons
+document.querySelectorAll('.ftab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    buildGrid(btn.dataset.f);
+  });
+});
+
+// View toggle
+document.getElementById('vMasonry').addEventListener('click',()=>{
+  document.getElementById('grid').className='gallery-grid';
+  document.getElementById('vMasonry').classList.add('active');
+  document.getElementById('v2col').classList.remove('active');
+});
+document.getElementById('v2col').addEventListener('click',()=>{
+  document.getElementById('grid').className='gallery-grid view-2';
+  document.getElementById('v2col').classList.add('active');
+  document.getElementById('vMasonry').classList.remove('active');
+});
+
+// ═══════════════════════════════════════════════
+// LIGHTBOX
+// ═══════════════════════════════════════════════
+const lb = document.getElementById('lb');
+let lbIdx = 0;
+let detailOpen = true;
+
+function buildStrip() {
+  const strip = document.getElementById('lbStrip');
+  strip.innerHTML = '';
+  visiblePhotos.forEach((p, i)=>{
+    const th = document.createElement('div');
+    th.className = 'lb-thumb'+(i===lbIdx?' active':'');
+    th.innerHTML = `<img src="${p.thumb}" alt="" loading="lazy"/>`;
+    th.addEventListener('click',()=>{ lbIdx=i; updateLB(); });
+    strip.appendChild(th);
+  });
+}
+
+function updateLB() {
+  const p = visiblePhotos[lbIdx];
+  if(!p) return;
+
+  // Image
+  document.getElementById('lbImg').src = p.src;
+  document.getElementById('lbImg').alt = p.title;
+
+  // Top counter
+  document.getElementById('lbCounterTop').textContent = `${lbIdx+1} / ${visiblePhotos.length}`;
+
+  // Detail panel
+  document.getElementById('dCat').textContent = p.category.toUpperCase();
+  document.getElementById('dCat').className = `detail-cat ${CAT_COLORS[p.category]}`;
+  document.getElementById('dTitle').textContent = p.title;
+  document.getElementById('dDesc').textContent = p.desc;
+  document.getElementById('dDate').textContent = p.date;
+  document.getElementById('dDim').textContent = p.dims;
+  document.getElementById('dSize').textContent = p.size;
+  document.getElementById('dCamera').textContent = p.camera;
+  document.getElementById('dLoc').textContent = p.location;
+  document.getElementById('dPhotog').textContent = p.photographer;
+  document.getElementById('dExp').textContent = p.exposure;
+  document.getElementById('dApt').textContent = p.aperture;
+
+  // Palette
+  const pal = document.getElementById('dPalette');
+  pal.innerHTML = '';
+  p.palette.forEach(c=>{
+    const sw = document.createElement('div');
+    sw.className = 'palette-swatch';
+    sw.style.background = c;
+    sw.title = c;
+    pal.appendChild(sw);
+  });
+
+  // Tags
+  const tagsEl = document.getElementById('dTags');
+  tagsEl.innerHTML = p.tags.map(t=>`<span class="detail-tag">#${t}</span>`).join('');
+
+  // Download button
+  document.getElementById('lbDownload').onclick = ()=>window.open(p.src.replace('w=1800','w=3840'),'_blank');
+
+  // Thumbnails
+  document.querySelectorAll('.lb-thumb').forEach((el,i)=>el.classList.toggle('active',i===lbIdx));
+  const thumbs = document.querySelectorAll('.lb-thumb');
+  if(thumbs[lbIdx]) thumbs[lbIdx].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+
+  // Mobile detail
+  if(window.innerWidth<=768) {
+    document.getElementById('lbDetail').classList.remove('open');
+  }
+}
+
+function openLB(idx) {
+  lbIdx = idx;
+  buildStrip();
+  updateLB();
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLB() {
+  lb.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('lbClose').addEventListener('click', closeLB);
+lb.addEventListener('click', e=>{ if(e.target===lb) closeLB(); });
+
+document.getElementById('lbPrev').addEventListener('click',()=>{
+  lbIdx = (lbIdx-1+visiblePhotos.length)%visiblePhotos.length;
+  updateLB();
+});
+document.getElementById('lbNext').addEventListener('click',()=>{
+  lbIdx = (lbIdx+1)%visiblePhotos.length;
+  updateLB();
+});
+
+// Toggle info panel
+document.getElementById('lbToggleInfo').addEventListener('click',()=>{
+  const d = document.getElementById('lbDetail');
+  if(window.innerWidth<=768) {
+    d.classList.toggle('open');
+  } else {
+    detailOpen = !detailOpen;
+    d.classList.toggle('collapsed',!detailOpen);
+  }
+});
+
+// Keyboard
+document.addEventListener('keydown', e=>{
+  if(!lb.classList.contains('open')) return;
+  if(e.key==='Escape') closeLB();
+  if(e.key==='ArrowLeft')  { lbIdx=(lbIdx-1+visiblePhotos.length)%visiblePhotos.length; updateLB(); }
+  if(e.key==='ArrowRight') { lbIdx=(lbIdx+1)%visiblePhotos.length; updateLB(); }
+  if(e.key==='i'||e.key==='I') document.getElementById('lbToggleInfo').click();
+});
+
+// Touch swipe in lightbox
+let tx=0, ty=0;
+document.getElementById('lbImg').parentElement.addEventListener('touchstart', e=>{tx=e.touches[0].clientX; ty=e.touches[0].clientY;},{passive:true});
+document.getElementById('lbImg').parentElement.addEventListener('touchend', e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  const dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50){
+    if(dx<0){ lbIdx=(lbIdx+1)%visiblePhotos.length; } else { lbIdx=(lbIdx-1+visiblePhotos.length)%visiblePhotos.length; }
+    updateLB();
+  }
+});
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+buildGrid('all');
+</script>
+</body>
+</html>
